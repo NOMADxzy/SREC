@@ -1,0 +1,13 @@
+*__pycache__*
+__MACOSX/
+/rl_abr.egg-info*
+.DS_STORE
+.idea*
+.vagrant*
+rl_abr/.DS_STORE
+rl_abr/__pycache__*
+*.zip
+rl_abr/envs/traces*
+rl_abr/envs/videos*
+rl_abr/envs/cellular_traces.zip
+*.pyc
