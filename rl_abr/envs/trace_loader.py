@@ -50,7 +50,7 @@ def load_traces():
             'https://www.dropbox.com/s/xdlvykz9puhg5xd/cellular_traces.zip?dl=1',
             out=rl_abr.__path__[0] + root_folder)
         with zipfile.ZipFile(
-             rl_abr.__path__[0] + '/envs/abr_sim/cellular_traces.zip', 'r') as zip_f:
+             rl_abr.__path__[0] + root_folder + 'cellular_traces.zip', 'r') as zip_f:
             zip_f.extractall(rl_abr.__path__[0] + root_folder)
 
     all_traces = []
