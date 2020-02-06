@@ -81,7 +81,6 @@ def sample_trace(all_traces, np_random):
     # sample a starting point
     init_t_idx = np_random.choice(len(all_traces[trace_idx][0]))
     # return a trace and the starting t
-    print(trace_idx, init_t_idx)
     return all_traces[trace_idx], init_t_idx
 
 
