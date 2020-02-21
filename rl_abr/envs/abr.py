@@ -67,7 +67,7 @@ class ABRSimEnv(gym.Env):
         self.past_chunk_len = 8
         # Number of states to present in observation space
         self.obs_chunk_len = 1
-        for key, arg in kwargs:
+        for key, arg in kwargs.items():
             print("key", key, "arg", arg)
             if key == "obs_chunk_len":
                 self.obs_chunk_len = arg
