@@ -83,7 +83,14 @@ class ABRSimEnv(gym.Env):
 
         # network throughput of past chunk, past chunk download time,
         # current buffer, number of chunks left and the last bitrate choice
+        # obs_arr = [self.past_chunk_throughputs[-1],
+        #            self.past_chunk_download_times[-1],
+        #            self.buffer_size,
+        #            self.total_num_chunks - self.chunk_idx,
+        #            valid_past_action]
         obs_arr = [self.past_chunk_throughputs[-1],
+                   self.past_chunk_throughputs[-2],
+                   self.past_chunk_throughputs[-3],
                    self.past_chunk_download_times[-1],
                    self.buffer_size,
                    self.total_num_chunks - self.chunk_idx,
