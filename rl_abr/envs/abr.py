@@ -51,7 +51,7 @@ class ABRSimEnv(gym.Env):
         https://dl.acm.org/citation.cfm?id=2787486
     """
     metadata = {'render.modes': ['human']}
-    def __init__(self):
+    def __init__(self, **kwargs):
         # observation and action space
         self.setup_space()
         # set up seed NOTE: Updated this to pass None into Gym Seeding function, really do need to check this
@@ -65,6 +65,14 @@ class ABRSimEnv(gym.Env):
         self.bitrate_map = [0.3, 0.75, 1.2, 1.85, 2.85, 4.3]  # Mbps
         # how many past throughput to report
         self.past_chunk_len = 8
+        # Number of states to present in observation space
+        self.obs_chunk_len = 1
+        for key, arg in kwargs:
+            print("key", key, "arg", arg)
+            if key == "obs_chunk_len":
+                self.obs_chunk_len = arg
+                assert arg < self.past_chunk_len
+                print("arg found")
         # assert number of chunks for different bitrates are all the same
         assert len(np.unique([len(chunk_size) for \
                chunk_size in self.chunk_sizes])) == 1
@@ -88,9 +96,8 @@ class ABRSimEnv(gym.Env):
         #            self.buffer_size,
         #            self.total_num_chunks - self.chunk_idx,
         #            valid_past_action]
+        past_chunks = self.past_chunk_throughputs[self.past_chunk_len:]
         obs_arr = [self.past_chunk_throughputs[-1],
-                   self.past_chunk_throughputs[-2],
-                   self.past_chunk_throughputs[-3],
                    self.past_chunk_download_times[-1],
                    self.buffer_size,
                    self.total_num_chunks - self.chunk_idx,
