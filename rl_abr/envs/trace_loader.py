@@ -37,10 +37,10 @@ def load_chunk_sizes():
 
 
 def load_traces():
-    print(rl_abr.__path__)
-    print("0", rl_abr.__path__[0])
+    #print(rl_abr.__path__)
+    #print("0", rl_abr.__path__[0])
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    print("dir_path", dir_path)
+    #print("dir_path", dir_path)
     # download video size folder if not existed
     trace_folder = rl_abr.__path__[0] + root_folder + 'traces/'
     #trace_folder = rl_abr.__path__[0] + '/envs/abr_sim/traces/'
