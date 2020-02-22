@@ -53,6 +53,14 @@ class ABRSimEnv(gym.Env):
     metadata = {'render.modes': ['human']}
     def __init__(self, **kwargs):
         # observation and action space
+        # how many past throughput to report
+        self.past_chunk_len = 8
+        # Number of states to present in observation space
+        self.obs_chunk_len = 1
+        for key, arg in kwargs.items():
+            if key == "obs_chunk_len":
+                self.obs_chunk_len = arg
+                assert arg < self.past_chunk_len
         self.setup_space()
         # set up seed NOTE: Updated this to pass None into Gym Seeding function, really do need to check this
         self.seed(None)
@@ -63,16 +71,6 @@ class ABRSimEnv(gym.Env):
         self.chunk_sizes = load_chunk_sizes()
         # mapping between action and bitrate level
         self.bitrate_map = [0.3, 0.75, 1.2, 1.85, 2.85, 4.3]  # Mbps
-        # how many past throughput to report
-        self.past_chunk_len = 8
-        # Number of states to present in observation space
-        self.obs_chunk_len = 1
-        for key, arg in kwargs.items():
-            print("key", key, "arg", arg)
-            if key == "obs_chunk_len":
-                self.obs_chunk_len = arg
-                assert arg < self.past_chunk_len
-                print("arg found")
         # assert number of chunks for different bitrates are all the same
         assert len(np.unique([len(chunk_size) for \
                chunk_size in self.chunk_sizes])) == 1
@@ -158,10 +156,12 @@ class ABRSimEnv(gym.Env):
         # The boundary of the space may change if the dynamics is changed
         # a warning message will show up every time e.g., the observation falls
         # out of the observation space
-        self.obs_low = np.array([0] * 11)
+        self.obs_low = np.array([0] * (11 + self.obs_chunk_len - 1))
         # NOTE: NEED TO FIX
-        self.obs_high = np.array([
-            10e6, 100, 100, 500, 5, 10e6, 10e6, 10e6, 10e6, 10e6, 10e6])
+        # added variation for the first past observation values
+        self.obs_high = np.array([10e6] * (self.obs_chunk_len - 1))
+        self.obs_high = self.obs_high.concatenate(np.array([100, 100, 500, 5, 10e6, 10e6, 10e6, 10e6, 10e6, 10e6]))
+
         self.observation_space = spaces.Box(
             low=self.obs_low, high=self.obs_high, dtype=np.float32)
         self.action_space = spaces.Discrete(6)
