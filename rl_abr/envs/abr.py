@@ -94,11 +94,11 @@ class ABRSimEnv(gym.Env):
         #            self.buffer_size,
         #            self.total_num_chunks - self.chunk_idx,
         #            valid_past_action]
-        obs_arr = [self.past_chunk_throughputs[-1],
-                   self.past_chunk_download_times[-1],
+        obs_arr = [self.past_chunk_throughputs[i] for i in range(self.past_chunk_len - self.obs_chunk_len,self.past_chunk_len)]
+        obs_arr.extend([self.past_chunk_download_times[-1],
                    self.buffer_size,
                    self.total_num_chunks - self.chunk_idx,
-                   valid_past_action]
+                   valid_past_action])
 
         # current chunk size of different bitrates
         obs_arr.extend(self.chunk_sizes[i][valid_chunk_idx] for i in range(6))
