@@ -159,7 +159,7 @@ class ABRSimEnv(gym.Env):
         self.obs_low = np.array([0] * (11 + self.obs_chunk_len - 1))
         # NOTE: NEED TO FIX
         # added variation for the first past observation values
-        self.obs_high = np.concatenate(np.array([10e6] * (self.obs_chunk_len - 1)), np.array([100, 100, 500, 5, 10e6, 10e6, 10e6, 10e6, 10e6, 10e6]))
+        self.obs_high = np.concatenate((np.array([10e6] * (self.obs_chunk_len - 1)), np.array([100, 100, 500, 5, 10e6, 10e6, 10e6, 10e6, 10e6, 10e6])))
 
         self.observation_space = spaces.Box(
             low=self.obs_low, high=self.obs_high, dtype=np.float32)
