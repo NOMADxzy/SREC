@@ -96,7 +96,6 @@ class ABRSimEnv(gym.Env):
         #            self.buffer_size,
         #            self.total_num_chunks - self.chunk_idx,
         #            valid_past_action]
-        past_chunks = self.past_chunk_throughputs[self.past_chunk_len:]
         obs_arr = [self.past_chunk_throughputs[-1],
                    self.past_chunk_download_times[-1],
                    self.buffer_size,
