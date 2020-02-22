@@ -158,10 +158,10 @@ class ABRSimEnv(gym.Env):
         # The boundary of the space may change if the dynamics is changed
         # a warning message will show up every time e.g., the observation falls
         # out of the observation space
-        self.obs_low = np.array([0] * 13)
+        self.obs_low = np.array([0] * 11)
         # NOTE: NEED TO FIX
         self.obs_high = np.array([
-            10e6, 10e6, 10e6, 100, 100, 500, 5, 10e6, 10e6, 10e6, 10e6, 10e6, 10e6])
+            10e6, 100, 100, 500, 5, 10e6, 10e6, 10e6, 10e6, 10e6, 10e6])
         self.observation_space = spaces.Box(
             low=self.obs_low, high=self.obs_high, dtype=np.float32)
         self.action_space = spaces.Discrete(6)
