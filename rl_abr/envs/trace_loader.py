@@ -53,7 +53,7 @@ def load_traces(trace_type):
                 out=rl_abr.__path__[0] + root_folder)
             with zipfile.ZipFile(
                  rl_abr.__path__[0] + root_folder + 'cellular_traces.zip', 'r') as zip_f:
-                zip_f.extractall(trace_folder)
+                zip_f.extractall(rl_abr.__path__[0] + root_folder)
 
         all_traces = []
 
