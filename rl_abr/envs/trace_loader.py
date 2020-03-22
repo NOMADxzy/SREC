@@ -53,7 +53,7 @@ def load_traces(trace_type):
                 'https://www.dropbox.com/s/xdlvykz9puhg5xd/cellular_traces.zip?dl=1',
                 out=rl_abr.__path__[0] + root_folder)
             with zipfile.ZipFile(
-                 rl_abr.__path__[0] + root_folder + 'train_cellular_traces.zip', 'r') as zip_f:
+                 rl_abr.__path__[0] + root_folder + 'cellular_traces.zip', 'r') as zip_f:
                 zip_f.extractall(rl_abr.__path__[0] + root_folder)
 
         all_traces = []
@@ -76,7 +76,7 @@ def load_traces(trace_type):
                 'https://www.dropbox.com/sh/ss0zs1lc4cklu3u/AAAD18W9IqDuLjocN7cvcpwCa/test_sim_traces?dl=1',
                 out=rl_abr.__path__[0] + root_folder)
             with zipfile.ZipFile(
-                 rl_abr.__path__[0] + root_folder + 'test_cellular_traces.zip', 'r') as zip_f:
+                 rl_abr.__path__[0] + root_folder + 'test_sim_traces.zip', 'r') as zip_f:
                 zip_f.extractall(rl_abr.__path__[0] + root_folder)
 
         all_traces = []

@@ -57,8 +57,6 @@ class ABRSimEnv(gym.Env):
         self.past_chunk_len = 8
         # Number of states to present in observation space
         self.obs_chunk_len = 1
-        print("Init")
-        print("kwargs", kwargs)
         self.trace_type = "n_train"
         for key, arg in kwargs.items():
             print(key, arg)
