@@ -44,7 +44,6 @@ def load_traces(trace_type):
     #print("dir_path", dir_path)
     # download video size folder if not existed
     trace_folder = rl_abr.__path__[0] + root_folder + 'traces/' + trace_type + '/'
-    create_folder_if_not_exists(trace_folder)
     print(trace_folder)
     print('rl_abr', rl_abr.__path__[0])
     #trace_folder = rl_abr.__path__[0] + '/envs/abr_sim/traces/'
