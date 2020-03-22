@@ -73,12 +73,13 @@ def load_traces(trace_type):
         # When extracting from the link below, it outputs a folder called test_sim_traces
         trace_folder = rl_abr.__path__[0] + root_folder + 'test_sim_traces/'
         if not os.path.exists(trace_folder):
+            create_folder_if_not_exists(trace_folder)
             wget.download(
                 'https://www.dropbox.com/sh/ss0zs1lc4cklu3u/AAAD18W9IqDuLjocN7cvcpwCa/test_sim_traces?dl=1',
                 out=rl_abr.__path__[0] + root_folder)
             with zipfile.ZipFile(
                  rl_abr.__path__[0] + root_folder + 'test_sim_traces.zip', 'r') as zip_f:
-                zip_f.extractall(rl_abr.__path__[0] + root_folder)
+                zip_f.extractall(trace_folder)
 
         all_traces = []
 
