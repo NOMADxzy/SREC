@@ -55,7 +55,7 @@ def load_traces(trace_type):
                 out=rl_abr.__path__[0] + root_folder)
             with zipfile.ZipFile(
                  rl_abr.__path__[0] + root_folder + 'cellular_traces.zip', 'r') as zip_f:
-                zip_f.extractall(rl_abr.__path__[0] + root_folder)
+                zip_f.extractall(trace_folder)
 
         all_traces = []
 
@@ -94,7 +94,7 @@ def load_traces(trace_type):
                     all_bandwidth.append(float(parse[1]))
 
             all_traces.append((all_t, all_bandwidth))
-
+    print("All traces len", len(all_traces))
     return all_traces
 
 
