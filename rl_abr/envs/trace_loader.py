@@ -43,11 +43,10 @@ def load_traces(trace_type):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     #print("dir_path", dir_path)
     # download video size folder if not existed
-    trace_folder = rl_abr.__path__[0] + root_folder + 'traces/' + trace_type + '/'
-    print(trace_folder)
-    print('rl_abr', rl_abr.__path__[0])
     #trace_folder = rl_abr.__path__[0] + '/envs/abr_sim/traces/'
     if trace_type == "n_train":
+        # When extracting from the link below, it outputs a folder called traces
+        trace_folder = rl_abr.__path__[0] + root_folder + 'traces/'
         if not os.path.exists(trace_folder):
             wget.download(
                 'https://www.dropbox.com/s/xdlvykz9puhg5xd/cellular_traces.zip?dl=1',
@@ -71,6 +70,8 @@ def load_traces(trace_type):
 
             all_traces.append((all_t, all_bandwidth))
     elif trace_type == "n_test":
+        # When extracting from the link below, it outputs a folder called test_sim_traces
+        trace_folder = rl_abr.__path__[0] + root_folder + 'test_sim_traces/'
         if not os.path.exists(trace_folder):
             wget.download(
                 'https://www.dropbox.com/sh/ss0zs1lc4cklu3u/AAAD18W9IqDuLjocN7cvcpwCa/test_sim_traces?dl=1',
