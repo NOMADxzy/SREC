@@ -36,37 +36,63 @@ def load_chunk_sizes():
     return chunk_sizes
 
 
-def load_traces():
+def load_traces(trace_type):
+    assert(trace_type in ["n_train", "n_test"])
     #print(rl_abr.__path__)
     #print("0", rl_abr.__path__[0])
     dir_path = os.path.dirname(os.path.realpath(__file__))
     #print("dir_path", dir_path)
     # download video size folder if not existed
-    trace_folder = rl_abr.__path__[0] + root_folder + 'traces/'
+    trace_folder = rl_abr.__path__[0] + root_folder + 'traces/' + trace_type + '/'
+    print(trace_folder)
+    print('rl_abr', rl_abr.__path__[0])
     #trace_folder = rl_abr.__path__[0] + '/envs/abr_sim/traces/'
+    if trace_type == "n_train":
+        if not os.path.exists(trace_folder):
+            wget.download(
+                'https://www.dropbox.com/s/xdlvykz9puhg5xd/cellular_traces.zip?dl=1',
+                out=rl_abr.__path__[0] + root_folder)
+            with zipfile.ZipFile(
+                 rl_abr.__path__[0] + root_folder + 'train_cellular_traces.zip', 'r') as zip_f:
+                zip_f.extractall(rl_abr.__path__[0] + root_folder)
 
-    if not os.path.exists(trace_folder):
-        wget.download(
-            'https://www.dropbox.com/s/xdlvykz9puhg5xd/cellular_traces.zip?dl=1',
-            out=rl_abr.__path__[0] + root_folder)
-        with zipfile.ZipFile(
-             rl_abr.__path__[0] + root_folder + 'cellular_traces.zip', 'r') as zip_f:
-            zip_f.extractall(rl_abr.__path__[0] + root_folder)
+        all_traces = []
 
-    all_traces = []
+        for trace in os.listdir(trace_folder):
 
-    for trace in os.listdir(trace_folder):
+            all_t = []
+            all_bandwidth = []
 
-        all_t = []
-        all_bandwidth = []
+            with open(trace_folder + trace, 'rb') as f:
+                for line in f:
+                    parse = line.split()
+                    all_t.append(float(parse[0]))
+                    all_bandwidth.append(float(parse[1]))
 
-        with open(trace_folder + trace, 'rb') as f:
-            for line in f:
-                parse = line.split()
-                all_t.append(float(parse[0]))
-                all_bandwidth.append(float(parse[1]))
+            all_traces.append((all_t, all_bandwidth))
+    elif trace_type == "n_test":
+        if not os.path.exists(trace_folder):
+            wget.download(
+                'https://www.dropbox.com/sh/ss0zs1lc4cklu3u/AAAD18W9IqDuLjocN7cvcpwCa/test_sim_traces?dl=1',
+                out=rl_abr.__path__[0] + root_folder)
+            with zipfile.ZipFile(
+                 rl_abr.__path__[0] + root_folder + 'test_cellular_traces.zip', 'r') as zip_f:
+                zip_f.extractall(rl_abr.__path__[0] + root_folder)
 
-        all_traces.append((all_t, all_bandwidth))
+        all_traces = []
+
+        for trace in os.listdir(trace_folder):
+
+            all_t = []
+            all_bandwidth = []
+
+            with open(trace_folder + trace, 'rb') as f:
+                for line in f:
+                    parse = line.split()
+                    all_t.append(float(parse[0]))
+                    all_bandwidth.append(float(parse[1]))
+
+            all_traces.append((all_t, all_bandwidth))
 
     return all_traces
 

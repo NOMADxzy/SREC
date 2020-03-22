@@ -59,17 +59,20 @@ class ABRSimEnv(gym.Env):
         self.obs_chunk_len = 1
         print("Init")
         print("kwargs", kwargs)
+        self.trace_type = "n_train"
         for key, arg in kwargs.items():
             print(key, arg)
             if key == "obs_chunk_len":
                 self.obs_chunk_len = arg
                 assert arg < self.past_chunk_len
+            elif key == "trace_type":
+                self.trace_type = arg
         self.setup_space()
         # set up seed NOTE: Updated this to pass None into Gym Seeding function, really do need to check this
         self.seed(None)
         # self.seed(42)
         # load all trace files
-        self.all_traces = load_traces()
+        self.all_traces = load_traces(self.trace_type)
         # load all video chunk sizes
         self.chunk_sizes = load_chunk_sizes()
         # mapping between action and bitrate level
@@ -104,6 +107,7 @@ class ABRSimEnv(gym.Env):
                    valid_past_action])
 
         # current chunk size of different bitrates
+        # TODO: Should change this to match chunk indices
         obs_arr.extend(self.chunk_sizes[i][valid_chunk_idx] for i in range(6))
 
         # fit in observation space
@@ -135,7 +139,8 @@ class ABRSimEnv(gym.Env):
             self.past_chunk_throughputs.append(0)
             self.past_chunk_download_times.append(0)
 
-        return self.observe()
+        self.past_observation = self.observe()
+        return self.past_observation
 
     def render(self, mode='human'):
         return
@@ -229,11 +234,11 @@ class ABRSimEnv(gym.Env):
             self.chunk_sizes[action][self.chunk_idx] / float(delay))
         self.past_chunk_download_times.append(delay)
 
-        # advance video
+        # Advance video
         self.chunk_idx += 1
         done = (self.chunk_idx == self.total_num_chunks)
-
-        return self.observe(), reward, done, \
+        self.past_observation = self.observe()
+        return self.past_observation, reward, done, \
                {'bitrate': self.bitrate_map[action],
                 'stall_time': rebuffer_time,
                 'bitrate_change': bitrate_change}
