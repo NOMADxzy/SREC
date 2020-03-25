@@ -95,7 +95,6 @@ def load_traces(trace_type):
                     all_bandwidth.append(float(parse[1]))
 
             all_traces.append((all_t, all_bandwidth))
-    print("All traces len", len(all_traces))
     return all_traces
 
 

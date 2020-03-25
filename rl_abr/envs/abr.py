@@ -8,6 +8,17 @@ from rl_abr.envs.trace_loader import \
     load_traces, load_chunk_sizes, sample_trace, get_chunk_time
 
 
+class StateNormalizer(object):
+    def __init__(self, obs_space):
+        self.shift = obs_space.low
+        self.range = obs_space.high - obs_space.low
+
+    def normalize(self, obs):
+        return (obs - self.shift) / self.range
+
+    def unnormalize(self, obs):
+        return (obs * self.range) + self.shift
+
 class ABRSimEnv(gym.Env):
     """
     Adapt bitrate during a video playback with varying network conditions.
@@ -55,16 +66,18 @@ class ABRSimEnv(gym.Env):
         # observation and action space
         # how many past throughput to report
         self.past_chunk_len = 8
-        # Number of states to present in observation space
-        self.obs_chunk_len = 1
-        self.trace_type = "n_train"
-        for key, arg in kwargs.items():
-            print(key, arg)
-            if key == "obs_chunk_len":
-                self.obs_chunk_len = arg
-                assert arg < self.past_chunk_len
-            elif key == "trace_type":
-                self.trace_type = arg
+
+        self.trace_type = "n_train" if "trace_type" not in kwargs else kwargs["trace_type"]
+        self.obs_chunk_len = 1 if "obs_chunk_len" not in kwargs else kwargs["obs_chunk_len"]
+        self.normalize_obs = False if "normalize_obs" not in kwargs else kwargs["normalize_obs"]
+        # self.trace_type = "n_train"
+        #
+        # for key, arg in kwargs.items():
+        #     if key == "obs_chunk_len":
+        #         self.obs_chunk_len = arg
+        #         assert arg < self.past_chunk_len
+        #     elif key == "trace_type":
+        #         self.trace_type = arg
         self.setup_space()
         # set up seed NOTE: Updated this to pass None into Gym Seeding function, really do need to check this
         self.seed(None)
@@ -138,7 +151,7 @@ class ABRSimEnv(gym.Env):
             self.past_chunk_download_times.append(0)
 
         self.past_observation = self.observe()
-        return self.past_observation
+        return self.past_observation if not self.normalize_obs else self.state_normalizer.normalize(self.past_observation)
 
     def render(self, mode='human'):
         return
@@ -162,13 +175,19 @@ class ABRSimEnv(gym.Env):
         # The boundary of the space may change if the dynamics is changed
         # a warning message will show up every time e.g., the observation falls
         # out of the observation space
-        self.obs_low = np.array([0] * (11 + self.obs_chunk_len - 1))
+        self.og_obs_low = np.array([0] * (11 + self.obs_chunk_len - 1))
         # NOTE: NEED TO FIX
         # added variation for the first past observation values
-        self.obs_high = np.concatenate((np.array([10e6] * (self.obs_chunk_len)), np.array([100, 100, 500, 5, 10e6, 10e6, 10e6, 10e6, 10e6, 10e6])))
+        self.og_obs_high = np.concatenate((np.array([10e6] * (self.obs_chunk_len)), np.array([100, 100, 500, 5, 10e6, 10e6, 10e6, 10e6, 10e6, 10e6])))
 
-        self.observation_space = spaces.Box(
+        self.og_observation_space = spaces.Box(
             low=self.obs_low, high=self.obs_high, dtype=np.float32)
+        if self.normalize_obs:
+            self.observation_space = spaces.Box(low = 0.0, high = 1.0, shape=(len(self.og_obs_low),))
+        else:
+            self.observation_space = self.og_observation_space
+        self.state_normalizer = StateNormalizer(self.og_observation_space)
+
         self.action_space = spaces.Discrete(6)
 
     def step(self, action):
@@ -236,7 +255,8 @@ class ABRSimEnv(gym.Env):
         self.chunk_idx += 1
         done = (self.chunk_idx == self.total_num_chunks)
         self.past_observation = self.observe()
-        return self.past_observation, reward, done, \
+
+        return self.past_observation if not self.normalize_obs else self.state_normalizer.normalize(self.past_observation), reward, done, \
                {'bitrate': self.bitrate_map[action],
                 'stall_time': rebuffer_time,
                 'bitrate_change': bitrate_change}
