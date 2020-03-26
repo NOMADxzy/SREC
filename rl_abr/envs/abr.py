@@ -181,7 +181,7 @@ class ABRSimEnv(gym.Env):
         self.og_obs_high = np.concatenate((np.array([10e6] * (self.obs_chunk_len)), np.array([100, 100, 500, 5, 10e6, 10e6, 10e6, 10e6, 10e6, 10e6])))
 
         self.og_observation_space = spaces.Box(
-            low=self.obs_low, high=self.obs_high, dtype=np.float32)
+            low=self.og_obs_low, high=self.og_obs_high, dtype=np.float32)
         if self.normalize_obs:
             self.observation_space = spaces.Box(low = 0.0, high = 1.0, shape=(len(self.og_obs_low),))
         else:
