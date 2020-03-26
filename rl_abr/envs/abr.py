@@ -123,13 +123,13 @@ class ABRSimEnv(gym.Env):
 
         # fit in observation space
         for i in range(len(obs_arr)):
-            if obs_arr[i] > self.obs_high[i]:
+            if obs_arr[i] > self.og_obs_high[i]:
                 logger.warn('Observation at index ' + str(i) +
                     ' at chunk index ' + str(self.chunk_idx) +
                     ' has value ' + str(obs_arr[i]) +
                     ', which is larger than obs_high ' +
-                    str(self.obs_high[i]))
-                obs_arr[i] = self.obs_high[i]
+                    str(self.og_obs_high[i]))
+                obs_arr[i] = self.og_obs_high[i]
 
         obs_arr = np.array(obs_arr)
         assert self.observation_space.contains(obs_arr)
