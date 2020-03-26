@@ -132,7 +132,7 @@ class ABRSimEnv(gym.Env):
                 obs_arr[i] = self.og_obs_high[i]
 
         obs_arr = np.array(obs_arr)
-        assert self.observation_space.contains(obs_arr)
+        assert self.og_observation_space.contains(obs_arr)
 
         return obs_arr
 
