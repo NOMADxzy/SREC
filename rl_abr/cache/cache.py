@@ -260,6 +260,7 @@ class CacheEnv(gym.Env):
         self.un_norm_observation_space = spaces.Box(self.src.min_values, \
                                             self.src.max_values, \
                                             dtype=np.float32)
+        self.observation_space = self.un_norm_observation_space if self.normalize else spaces.Box(0.0, 1.0, shape = self.un_norm_observation_space.shape, dtype=np.float32)
         self.state_normalizer = StateNormalizer(self.un_norm_observation_space)
 
         # cache simulator
