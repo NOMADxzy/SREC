@@ -6,7 +6,7 @@ import pandas as pd
 import rl_abr
 
 def load_traces(trace, cache_size, rnd):
-    trace_folder = rl_abr.__path__[0] + 'cache/traces/'
+    trace_folder = rl_abr.__path__[0] + '/cache/traces/'
     if trace == 'test':
         if not os.path.exists(trace_folder):
             os.mkdir(trace_folder)
