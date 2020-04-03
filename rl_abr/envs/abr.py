@@ -16,6 +16,7 @@ class StateNormalizer(object):
     def normalize(self, obs):
         return (obs - self.shift) / self.range
 
+    # Used for world model reward calculations
     def unnormalize(self, obs):
         return (obs * self.range) + self.shift
 

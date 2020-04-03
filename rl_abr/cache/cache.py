@@ -12,6 +12,16 @@ from rl_abr.cache.trace_loader import load_traces
 accept = 1
 reject = 0
 
+class StateNormalizer(object):
+    def __init__(self, obs_space):
+        self.shift = obs_space.low
+        self.range = obs_space.high - obs_space.low
+
+    def normalize(self, obs):
+        return (obs - self.shift) / self.range
+
+    def unnormalize(self, obs):
+        return (obs * self.range) + self.shift
 
 class TraceSrc(object):
     '''
@@ -235,6 +245,7 @@ class CacheEnv(gym.Env):
     def __init__(self, seed=42, **kwargs):
         self.cache_size = 1024 if "cache_size" not in kwargs else kwargs["cache_size"]
         self.cache_trace = "test" if "cache_trace" not in kwargs else kwargs["cache_trace"]
+        self.normalize = "False" if "normalize" not in kwargs else kwargs["normalize"]
         self.seed(seed)
 
         self.trace_type = "n_train" if "trace_type" not in kwargs else kwargs["trace_type"]
@@ -246,15 +257,16 @@ class CacheEnv(gym.Env):
 
         # set up the state and action space
         self.action_space = spaces.Discrete(2)
-        self.observation_space = spaces.Box(self.src.min_values, \
+        self.un_norm_observation_space = spaces.Box(self.src.min_values, \
                                             self.src.max_values, \
                                             dtype=np.float32)
+        self.state_normalizer = StateNormalizer(self.un_norm_observation_space)
 
         # cache simulator
         self.sim = CacheSim(cache_size=self.cache_size, \
                             policy='lru', \
                             action_space=self.action_space, \
-                            state_space=self.observation_space)
+                            state_space=self.un_norm_observation_space)
 
         # reset environment (generate new jobs)
         self.reset(1, 2)
@@ -289,7 +301,7 @@ class CacheEnv(gym.Env):
 
         obs = self.sim.get_state(obj)
         info = {}
-        return obs, reward, done, info
+        return obs if not self.normalize else self.state_normalizer.normalize(obs), reward, done, info
 
     def render(self, mode='human', close=False):
         pass
