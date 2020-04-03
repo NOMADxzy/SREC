@@ -157,6 +157,7 @@ class ABRSimEnv(gym.Env):
         return
 
     def seed(self, seed):
+        # TODO: Make this match the signature of OpenAI Gym
         # Note: Attempted to use first result for seed, rng from the OpenAI gym utils function, but the int_list_ .. appeared to cause issues
         self.np_random = seeding.np_random(seed)[0]
         # self.np_random = self.np_random_func(seed)
