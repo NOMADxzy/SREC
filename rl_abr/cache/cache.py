@@ -279,7 +279,8 @@ class CacheEnv(gym.Env):
             print("New Env Start", new_trace)
         elif self.cache_trace == 'real':
             print("New Env Start Real")
-        return self.sim.get_state()
+        state = self.sim.get_state()
+        return state if not self.normalize else self.state_normalizer.normalize(state)
 
     def seed(self, seed):
         self.np_random = seeding.np_random(seed)[0]
