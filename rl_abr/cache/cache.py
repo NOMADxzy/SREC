@@ -272,7 +272,7 @@ class CacheEnv(gym.Env):
         # reset environment (generate new jobs)
         self.reset(1, 2)
 
-    def reset(self, low=1, high=1001):
+    def reset(self, low=0, high=1000):
         new_trace = self.np_random.randint(low, high)
         self.src.reset(new_trace)
         self.sim.reset()
