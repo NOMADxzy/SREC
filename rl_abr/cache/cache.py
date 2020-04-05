@@ -43,7 +43,6 @@ class TraceSrc(object):
         self.cache_size = cache_size
         self.min_values = np.asarray([1, 0, 0])
         self.max_values = np.asarray([self.cache_size, self.cache_size, max(self.load_trace[0])])
-        print("max values", self.max_values)
         self.req = 0
 
     def reset(self, random):
@@ -68,7 +67,7 @@ class TraceSrc(object):
         return obs, done
 
 class CacheSim(object):
-    def __init__(self, cache_size, policy, action_space, state_space):
+    def __init__(self, cache_size, policy, action_space, state_space, unseen_recency):
         # invariant
         '''
         This is the simulater for the cache.
@@ -96,6 +95,7 @@ class CacheSim(object):
         self.count_ohr = 0
         self.count_bhr = 0
         self.size_all = 0
+        self.unseen_recency = unseen_recency
 
     def reset(self):
         self.req = 0
@@ -114,15 +114,6 @@ class CacheSim(object):
         cache_size_online_remain = self.cache_remain
         discard_obj_if_admit = []
         obj_time, obj_id, obj_size = obj[0], obj[1], obj[2]
-
-        # Initialize the last request time
-        try:
-            self.last_req_time_dict[obj_id] = req - self.cache[obj[1]][1]
-        except IndexError:
-            try:
-                self.last_req_time_dict[obj_id] = req - self.non_cache[obj[1]][1]
-            except IndexError:
-                self.last_req_time_dict[obj_id] = 500
 
         # create the current state for cache simulator
         cost = 0
@@ -212,7 +203,7 @@ class CacheSim(object):
             try:
                 req = self.req - self.non_cache[obj_id][1]
             except IndexError:
-                req = 500
+                req = self.unseen_recency
         state = [obj_size, self.cache_remain, req]
 
         return state
@@ -243,11 +234,9 @@ class CacheEnv(gym.Env):
         self.cache_size = 1024 if "cache_size" not in kwargs else kwargs["cache_size"]
         self.cache_trace = "test" if "cache_trace" not in kwargs else kwargs["cache_trace"]
         self.normalize = "False" if "normalize" not in kwargs else kwargs["normalize"]
+        self.unseen_recency = 500 if "unseen_recency" not in kwargs else kwargs["unseen_recency"]
+
         self.seed(seed)
-
-        self.trace_type = "n_train" if "trace_type" not in kwargs else kwargs["trace_type"]
-        self.obs_chunk_len = 1 if "obs_chunk_len" not in kwargs else kwargs["obs_chunk_len"]
-
 
         # load trace, attach initial online feature values
         self.src = TraceSrc(trace=self.cache_trace, cache_size=self.cache_size)
@@ -264,7 +253,8 @@ class CacheEnv(gym.Env):
         self.sim = CacheSim(cache_size=self.cache_size, \
                             policy='lru', \
                             action_space=self.action_space, \
-                            state_space=self.un_norm_observation_space)
+                            state_space=self.un_norm_observation_space,
+                            unseen_receny=self.unseen_recency)
 
         # reset environment (generate new jobs)
         self.reset(1, 2)
