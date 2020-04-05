@@ -43,6 +43,7 @@ class TraceSrc(object):
         self.cache_size = cache_size
         self.min_values = np.asarray([1, 0, 0])
         self.max_values = np.asarray([self.cache_size, self.cache_size, max(self.load_trace[0])])
+        print("max values", self.max_values)
         self.req = 0
 
     def reset(self, random):
@@ -65,10 +66,6 @@ class TraceSrc(object):
         obs = self.load_trace.iloc[self.req].values
         done = (self.req + 1) >= self.n_request
         return obs, done
-
-    def trace_done(self):
-        return done
-
 
 class CacheSim(object):
     def __init__(self, cache_size, policy, action_space, state_space):
