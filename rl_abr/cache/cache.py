@@ -254,7 +254,7 @@ class CacheEnv(gym.Env):
                             policy='lru', \
                             action_space=self.action_space, \
                             state_space=self.un_norm_observation_space,
-                            unseen_receny=self.unseen_recency)
+                            unseen_recency=self.unseen_recency)
 
         # reset environment (generate new jobs)
         self.reset(1, 2)
