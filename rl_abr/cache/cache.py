@@ -234,7 +234,7 @@ class CacheEnv(gym.Env):
         self.cache_size = 1024 if "cache_size" not in kwargs else kwargs["cache_size"]
         self.cache_trace = "test" if "cache_trace" not in kwargs else kwargs["cache_trace"]
         self.normalize = "False" if "normalize" not in kwargs else kwargs["normalize"]
-        self.unseen_recency = 500 if "unseen_recency" not in kwargs else kwargs["unseen_recency"]
+        self.unseen_recency = 1000 if "unseen_recency" not in kwargs else kwargs["unseen_recency"]
 
         self.seed(seed)
 
