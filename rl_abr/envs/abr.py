@@ -185,7 +185,7 @@ class ABRSimEnv(gym.Env):
         self.og_observation_space = spaces.Box(
             low=self.og_obs_low, high=self.og_obs_high, dtype=np.float32)
         if self.normalize_obs:
-            self.observation_space = spaces.Box(low = 0.0, high = 1.0, shape=(len(self.og_obs_low),))
+            self.observation_space = spaces.Box(low = 0.0, high = 1.0, shape=(len(self.og_obs_low),), dtype=np.float32)
         else:
             self.observation_space = self.og_observation_space
         self.state_normalizer = StateNormalizer(self.og_observation_space)

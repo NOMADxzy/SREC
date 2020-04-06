@@ -11,4 +11,6 @@ rl_abr/envs/traces*
 rl_abr/envs/videos*
 rl_abr/envs/cellular_traces.zip
 rl_abr/cache/traces*
+testenv*
+req.txt
 *.pyc
