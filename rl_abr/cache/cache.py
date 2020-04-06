@@ -18,6 +18,7 @@ class StateNormalizer(object):
         self.range = obs_space.high - obs_space.low
 
     def normalize(self, obs):
+        print("PRENORM", obs)
         return (obs - self.shift) / self.range
 
     def unnormalize(self, obs):
