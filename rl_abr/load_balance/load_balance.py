@@ -11,6 +11,16 @@ from rl_abr.load_balance.server import Server
 from rl_abr.load_balance.timeline import Timeline
 from rl_abr.load_balance.wall_time import WallTime
 
+class StateNormalizer(object):
+    def __init__(self, obs_space):
+        self.shift = obs_space.low
+        self.range = obs_space.high - obs_space.low
+
+    def normalize(self, obs):
+        return (obs - self.shift) / self.range
+
+    def unnormalize(self, obs):
+        return (obs * self.range) + self.shift
 
 class LoadBalanceEnv(gym.Env):
     """
@@ -56,7 +66,9 @@ class LoadBalanceEnv(gym.Env):
                  job_size_pareto_shape = 1.5,
                  job_size_pareto_scale = 100.0,
                  load_balance_obs_high = 500000.0,
+                 normalize = True,
                  seed = 42):
+        self.normalize = normalize
         # total number of streaming jobs (can be very large)
         self.num_stream_jobs = num_stream_jobs
         self.num_servers = num_servers
@@ -157,7 +169,8 @@ class LoadBalanceEnv(gym.Env):
         self.finished_jobs = []
         # initialize environment (jump to first job arrival event)
         self.initialize()
-        return self.observe()
+        state = self.observe()
+        return state if not self.normalize else self.state_normalizer.normalize(state)
 
     def seed(self, seed):
         self.np_random = seeding.np_random(seed)[0]
@@ -169,8 +182,10 @@ class LoadBalanceEnv(gym.Env):
         # out of the observation space
         self.obs_low = np.array([0] * (num_servers + 1))
         self.obs_high = np.array([load_balance_obs_high] * (num_servers + 1))
-        self.observation_space = spaces.Box(
+        self.un_norm_observation_space = spaces.Box(
             low=self.obs_low, high=self.obs_high, dtype=np.float32)
+        self.observation_space = self.un_norm_observation_space if self.normalize else spaces.Box(0.0, 1.0,shape=self.un_norm_observation_space.shape, dtype=np.float32)
+        self.state_normalizer = StateNormalizer(self.un_norm_observation_space)
         self.action_space = spaces.Discrete(num_servers)
 
     def step(self, action):
@@ -240,4 +255,5 @@ class LoadBalanceEnv(gym.Env):
         done = ((len(self.timeline) == 0) and \
                self.incoming_job is None)
 
-        return self.observe(), reward, done, {'curr_time': self.wall_time.curr_time}
+        state = self.observe()
+        return state if not self.normalize else self.state_normalizer.normalize(state), reward, done, {'curr_time': self.wall_time.curr_time}

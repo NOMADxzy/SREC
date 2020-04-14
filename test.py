@@ -7,8 +7,8 @@ import numpy as np
 past_bitrates = 1
 # env = ABRSimEnv(trace_type = 'n_train')
 # env = CacheEnv(normalize = True, cache_size = 512, unseen_recency = 500)
-env = LoadBalanceEnv()
-experiences = 100
+env = LoadBalanceEnv(normalize=True)
+experiences = 10
 actions = 100000
 
 total_total_length = []
@@ -19,6 +19,7 @@ for i in range(experiences):
     for j in range(actions):
         action = env.action_space.sample()  # direct action for test
         obs, reward, done, info = env.step(action)
+        print(obs)
         total_reward += reward
         if done:
             break
