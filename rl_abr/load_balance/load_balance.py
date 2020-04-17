@@ -190,7 +190,7 @@ class LoadBalanceEnv(gym.Env):
             self.obs_low = np.concatenate((self.obs_low, np.array([0])))
             # Max value for time is dependent on time taken to complete all jobs
             # Capped value for max load on a server in original park fomulation, final time
-            self.obs_high = np.concatenate((self.obs_high, np.array([self.load_balance_obs_high * 2 * (self.num_stream_jobs) / low_server])))
+            self.obs_high = np.concatenate((self.obs_high, np.array([self.load_balance_obs_high * self.job_interval * (self.num_stream_jobs) / low_server])))
         self.un_norm_observation_space = spaces.Box(
             low=self.obs_low, high=self.obs_high, dtype=np.float64)
         self.observation_space = self.un_norm_observation_space if not self.normalize else spaces.Box(0.0, 1.0,shape=self.un_norm_observation_space.shape, dtype=np.float64)
