@@ -9,7 +9,7 @@ past_bitrates = 1
 # env = CacheEnv(normalize = False, cache_size = 512, unseen_recency = 500)
 # env = LoadBalanceEnv(add_time = True, normalize = False)
 env = LoadBalanceEnv(add_time = True, normalize = False, num_stream_jobs=400, service_rates = (0.5, 1.0, 1.5), num_servers =  3,job_size_pareto_scale = 65)
-experiences = 50
+experiences = 10000
 #experiences = 1
 actions = 100000
 

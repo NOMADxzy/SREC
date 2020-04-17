@@ -147,21 +147,27 @@ class LoadBalanceEnv(gym.Env):
         if self.incoming_job is None:
             obs_arr.append(0)
         else:
-            if self.incoming_job.size > self.obs_high[-1]:
+            job_idx = -1 if not self.add_time else -2
+            if self.incoming_job.size > self.obs_high[job_idx]:
                 logger.warn('Incoming job at time ' + str(self.wall_time.curr_time) +
                               ' has size ' + str(self.incoming_job.size) +
                               ' larger than obs_high ' + str(self.obs_high[-1]))
-                obs_arr.append(self.obs_high[-1])
+                obs_arr.append(self.obs_high[job_idx])
             else:
                 obs_arr.append(self.incoming_job.size)
 
         if self.add_time:
             obs_arr.append(self.wall_time.curr_time)
         obs_arr = np.array(obs_arr)
+
         try:
             assert self.un_norm_observation_space.contains(obs_arr)
-        except:
-            print(self.un_norm_observation_space, obs_arr)
+        except AssertionError as err:
+            print(self.un_norm_observation_space.low)
+            print(self.un_norm_observation_space.high)
+            print(obs_arr)
+            print("JOB SIZE", self.incoming_job.size)
+            raise err
 
         return obs_arr
 
