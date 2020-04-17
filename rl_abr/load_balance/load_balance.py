@@ -158,7 +158,10 @@ class LoadBalanceEnv(gym.Env):
         if self.add_time:
             obs_arr.append(self.wall_time.curr_time)
         obs_arr = np.array(obs_arr)
-        assert self.un_norm_observation_space.contains(obs_arr)
+        try:
+            assert self.un_norm_observation_space.contains(obs_arr)
+        except:
+            print(self.un_norm_observation_space, obs_arr)
 
         return obs_arr
 
