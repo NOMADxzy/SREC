@@ -67,8 +67,10 @@ class LoadBalanceEnv(gym.Env):
                  job_size_pareto_scale = 100.0,
                  load_balance_obs_high = 500000.0,
                  normalize = True,
+                 add_time = False,
                  seed = 42):
         self.normalize = normalize
+        self.add_time = add_time
         # total number of streaming jobs (can be very large)
         self.num_stream_jobs = num_stream_jobs
         self.num_servers = num_servers
@@ -78,7 +80,7 @@ class LoadBalanceEnv(gym.Env):
         self.job_size_pareto_shape = job_size_pareto_shape
         self.service_rates = service_rates
         # observation and action space
-        self.setup_space(self.num_servers, self.load_balance_obs_high)
+        self.setup_space(self.num_servers, self.load_balance_obs_high, self.service_rates[0])
         # random seed
         self.seed(seed)
         # global timer
@@ -153,8 +155,10 @@ class LoadBalanceEnv(gym.Env):
             else:
                 obs_arr.append(self.incoming_job.size)
 
+        if self.add_time:
+            obs_arr.append(self.wall_time.curr_time)
         obs_arr = np.array(obs_arr)
-        assert self.observation_space.contains(obs_arr)
+        assert self.un_norm_observation_space.contains(obs_arr)
 
         return obs_arr
 
@@ -175,16 +179,21 @@ class LoadBalanceEnv(gym.Env):
     def seed(self, seed):
         self.np_random = seeding.np_random(seed)[0]
 
-    def setup_space(self, num_servers, load_balance_obs_high):
+    def setup_space(self, num_servers, load_balance_obs_high, low_server):
         # Set up the observation and action space
         # The boundary of the space may change if the dynamics is changed
         # a warning message will show up every time e.g., the observation falls
         # out of the observation space
         self.obs_low = np.array([0] * (num_servers + 1))
         self.obs_high = np.array([load_balance_obs_high] * (num_servers + 1))
+        if self.add_time:
+            self.obs_low = np.concatenate((self.obs_low, np.array([0])))
+            # Max value for time is dependent on time taken to complete all jobs
+            # Capped value for max load on a server in original park fomulation, final time
+            self.obs_high = np.concatenate((self.obs_high, np.array([self.load_balance_obs_high * 2 * (self.num_stream_jobs) / low_server])))
         self.un_norm_observation_space = spaces.Box(
-            low=self.obs_low, high=self.obs_high, dtype=np.float32)
-        self.observation_space = self.un_norm_observation_space if self.normalize else spaces.Box(0.0, 1.0,shape=self.un_norm_observation_space.shape, dtype=np.float32)
+            low=self.obs_low, high=self.obs_high, dtype=np.float64)
+        self.observation_space = self.un_norm_observation_space if not self.normalize else spaces.Box(0.0, 1.0,shape=self.un_norm_observation_space.shape, dtype=np.float64)
         self.state_normalizer = StateNormalizer(self.un_norm_observation_space)
         self.action_space = spaces.Discrete(num_servers)
 
@@ -254,6 +263,7 @@ class LoadBalanceEnv(gym.Env):
 
         done = ((len(self.timeline) == 0) and \
                self.incoming_job is None)
+
 
         state = self.observe()
         return state if not self.normalize else self.state_normalizer.normalize(state), reward, done, {'curr_time': self.wall_time.curr_time}

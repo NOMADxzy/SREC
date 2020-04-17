@@ -6,7 +6,6 @@ def generate_job(np_random, job_size_pareto_shape, job_size_pareto_scale, job_in
             job_size_pareto_scale)
 
     t = int(np_random.exponential(job_interval))
-
     return t, size
 
 def generate_jobs(num_stream_jobs, np_random):
