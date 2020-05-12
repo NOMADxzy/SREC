@@ -68,8 +68,10 @@ class LoadBalanceEnv(gym.Env):
                  load_balance_obs_high = 500000.0,
                  normalize = True,
                  add_time = False,
+                 load_state = False,
                  seed = 42):
         self.normalize = normalize
+        self.load_state = load_state
         self.add_time = add_time
         # total number of streaming jobs (can be very large)
         self.num_stream_jobs = num_stream_jobs
@@ -133,7 +135,11 @@ class LoadBalanceEnv(gym.Env):
             load = sum(j.size for j in server.queue)
             if server.curr_job is not None:
                 # remaining work currently being processed
-                load += server.curr_job.finish_time - self.wall_time.curr_time
+                if not self.load_state:
+                    # Original park state formulation
+                    load += server.curr_job.finish_time - self.wall_time.curr_time
+                else:
+                    load += int((server.curr_job.finish_time - self.wall_time.curr_time) * server.service_rate)
             # if the load is larger than observation threshold
             # report a warning
             if load > self.obs_high[server.server_id]:
