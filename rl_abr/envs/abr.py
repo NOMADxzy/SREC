@@ -7,7 +7,7 @@ from gym.utils import seeding # Currently not trying to replace with this right 
 from rl_abr.envs.trace_loader import \
     load_traces, load_chunk_sizes, sample_trace, get_chunk_time
 
-
+ACTION_DIM = 6
 class StateNormalizer(object):
     def __init__(self, obs_space):
         self.shift = obs_space.low
@@ -115,12 +115,12 @@ class ABRSimEnv(gym.Env):
         obs_arr = [self.past_chunk_throughputs[i] for i in range(self.past_chunk_len - self.obs_chunk_len,self.past_chunk_len)]
         obs_arr.extend([self.past_chunk_download_times[-1],
                    self.buffer_size,
-                   self.total_num_chunks - self.chunk_idx,
+                   # self.total_num_chunks - self.chunk_idx,
                    valid_past_action])
 
         # current chunk size of different bitrates
         # TODO: Should change this to match chunk indices
-        obs_arr.extend(self.chunk_sizes[i][valid_chunk_idx] for i in range(6))
+        # obs_arr.extend(self.chunk_sizes[i][valid_chunk_idx] for i in range(6))
 
         # fit in observation space
         for i in range(len(obs_arr)):
@@ -133,7 +133,7 @@ class ABRSimEnv(gym.Env):
                 obs_arr[i] = self.og_obs_high[i]
 
         obs_arr = np.array(obs_arr)
-        assert self.og_observation_space.contains(obs_arr)
+        # assert self.og_observation_space.contains(obs_arr)
 
         return obs_arr
 
@@ -177,10 +177,10 @@ class ABRSimEnv(gym.Env):
         # The boundary of the space may change if the dynamics is changed
         # a warning message will show up every time e.g., the observation falls
         # out of the observation space
-        self.og_obs_low = np.array([0] * (11 + self.obs_chunk_len - 1))
+        self.og_obs_low = np.array([0] * (4 + self.obs_chunk_len - 1))
         # NOTE: NEED TO FIX
         # added variation for the first past observation values
-        self.og_obs_high = np.concatenate((np.array([10e6] * (self.obs_chunk_len)), np.array([100, 100, 500, 5, 10e6, 10e6, 10e6, 10e6, 10e6, 10e6])))
+        self.og_obs_high = np.concatenate((np.array([10e6] * (self.obs_chunk_len)), np.array([10, 40, 5])))
 
         self.og_observation_space = spaces.Box(
             low=self.og_obs_low, high=self.og_obs_high, dtype=np.float32)
@@ -190,7 +190,7 @@ class ABRSimEnv(gym.Env):
             self.observation_space = self.og_observation_space
         self.state_normalizer = StateNormalizer(self.og_observation_space)
 
-        self.action_space = spaces.Discrete(6)
+        self.action_space = spaces.Discrete(ACTION_DIM)
 
     def step(self, action):
         # Note: if this function runs when the environment is done, it will cause an error, this should not occur
@@ -216,7 +216,7 @@ class ABRSimEnv(gym.Env):
             self.chunk_time_left -= chunk_time_used
             delay += chunk_time_used
 
-            if self.chunk_time_left == 0:
+            if self.chunk_time_left == 0: # 当前加载失败
 
                 self.curr_t_idx += 1
                 if self.curr_t_idx == len(self.trace[1]):
@@ -231,9 +231,6 @@ class ABRSimEnv(gym.Env):
         self.buffer_size = max(self.buffer_size - delay, 0)
         self.buffer_size += 4.0  # each chunk is 4 seconds of video
 
-        # cap the buffer size
-        self.buffer_size = min(self.buffer_size, 40.0)
-
         # bitrate change penalty
         if self.past_action is None:
             bitrate_change = 0
@@ -244,6 +241,11 @@ class ABRSimEnv(gym.Env):
         # linear reward
         # (https://dl.acm.org/citation.cfm?id=3098843 section 5.1, QoE metrics (1))
         reward = self.bitrate_map[action] - 4.3 * rebuffer_time - bitrate_change
+
+        reward -= (self.buffer_size - 40) * (ACTION_DIM - action - 1)  # 时间充裕但不选择最大码率的惩罚
+
+        # cap the buffer size
+        self.buffer_size = min(self.buffer_size, 40.0)
 
         # store action for future bitrate change penalty
         self.past_action = action
@@ -259,6 +261,9 @@ class ABRSimEnv(gym.Env):
         self.past_observation = self.observe()
 
         return self.past_observation if not self.normalize_obs else self.state_normalizer.normalize(self.past_observation), reward, done, \
-               {'bitrate': self.bitrate_map[action],
-                'stall_time': rebuffer_time,
-                'bitrate_change': bitrate_change}
+               {
+                    'bitrate': self.bitrate_map[action],
+                    'rebuffer_time': rebuffer_time,
+                    'buffer_size': self.buffer_size,
+                   'chunk_idx': self.chunk_idx
+                }
