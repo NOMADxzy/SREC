@@ -38,7 +38,7 @@ actions = 100000
 
 
 # env = ABRSimEnv(trace_type = 'n_test')
-env = ABRSimEnv(trace_type = 'n_train')
+env = ABRSimEnv(trace_type = 'n_train', obs_chunk_len=1, normalize_obs=True)
 total_total_reward = 0
 for i in range(experiences):
     env.reset()
